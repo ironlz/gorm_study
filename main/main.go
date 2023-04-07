@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"gorm_study/db"
+)
 
 func main() {
-	fmt.Println("hello, world")
+	_, err := db.GetDB()
+	if err != nil {
+		panic(err)
+	}
+
 }
