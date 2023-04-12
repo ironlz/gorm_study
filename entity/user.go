@@ -2,6 +2,7 @@ package entity
 
 import (
 	"database/sql"
+	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
@@ -10,6 +11,21 @@ import (
 // grom支持的模型倾向于约定，内部成员需要实现了Scanner和Valuer接口
 // 默认情况下, 使用ID作为主键，使用结构体的蛇形复数作为表名，字段名的蛇形作为列名，并使用CreatedAt，UpdatedAt，DeletedAt来跟踪列的生命周期
 // gorm内置了一个Model模型，定义了ID，CreatedAt，UpdatedAt，DeletedAt，可以内嵌到数据结构中，减少重复定义
+// 可以使用gorm.DB的AutoMigrate接口实现自动建表，如User会被创建如下结构的表：
+// CREATE TABLE `users` (
+// `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+// `created_at` datetime(3) DEFAULT NULL,
+// `updated_at` datetime(3) DEFAULT NULL,
+// `deleted_at` datetime(3) DEFAULT NULL,
+// `name` longtext,
+// `email` longtext,
+// `age` tinyint unsigned DEFAULT NULL,
+// `birthday` datetime(3) DEFAULT NULL,
+// `member_number` longtext,
+// `actived_at` datetime(3) DEFAULT NULL,
+// PRIMARY KEY (`id`),
+// KEY `idx_users_deleted_at` (`deleted_at`)
+// ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 type User struct {
 	*gorm.Model
 	//ID           uint
@@ -22,6 +38,24 @@ type User struct {
 	Birthday     *time.Time
 	MemberNumber sql.NullString
 	ActivedAt    sql.NullTime
+}
+
+// TableName 默认情况下, gorm使用users作为表名，也可以自定义修改
+func (u *User) TableName() string {
+	return "users"
+}
+
+// 钩子函数
+// gorm支持定义钩子函数，在User的某些特定生命周期阶段被回调
+// 支持的钩子函数接口在callbacks/interfaces.go中定义
+// 支持创建前后，更新前后，删除前后，查询后的相关回调
+// 钩子可以被跳过，当db回话声明SkipHooks为true时，会跳过本次操作的相关回调
+//
+
+// BeforeCreate 创建前被调用
+func (u *User) BeforeCreate(tx *gorm.DB) error {
+	fmt.Println("will save to db")
+	return nil
 }
 
 // AdvanceUser
